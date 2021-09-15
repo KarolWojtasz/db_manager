@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,7 +8,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Manager</title>
+    <title>Database Connection</title>
     <style>
         form {
             display: flex;
@@ -23,8 +26,9 @@
 </head>
 
 <body>
-    <h1>Database manager</h1>
+    <h1>Connect to mysql host</h1>
     <form action="" method="POST">
+        <label>Database address: <input type="text" name="servername"></label>
         <label>username: <input type="text" name="username"></label>
         <label>password: <input type="password" name="password"></label>
         <input type="submit" name="submit">
@@ -33,25 +37,24 @@
 
 
     if (!empty($_POST)) {
-        if ($_POST["username"] == NULL || $_POST["password"] == NULL) {
+        if ($_POST["username"] == NULL || $_POST["servername"] == NULL) {
             echo ("Fill in the form to login into system");
         } else {
-            include("pass.php");
-            $conn = new mysqli($servername, $username, $password);
+
+            $conn = @new mysqli($_POST["servername"], $_POST["username"], $_POST["password"]);
 
             if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
-            }
-            $result = $conn->query("SELECT * FROM users");
-            if ($result) {
-                while ($row = $result->fetch_object()) {
-                    $user_arr[] = $row;
-                    echo ($row["username"]);
-                }
-                // Free result set
-                echo ($row["username"]);
-                $result->close();
-                $db->next_result();
+                die("Connection failed, try again");
+            } else {
+                echo ("Connection successful");
+
+                $_SESSION["servername"] = $_POST["servername"];
+                $_SESSION["username"] = $_POST["username"];
+                $_SESSION["password"] = $_POST["password"];
+
+
+                $address = substr($_SERVER['PHP_SELF'], 0, -9);
+                header('Location: ' . $address . "manage.php");
             }
         }
     }
